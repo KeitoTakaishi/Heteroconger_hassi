@@ -28,6 +28,7 @@ public class Generator : MonoBehaviour {
         for (int i = 0; i <= Num; i++)
         {
             Tinanagos.Add(Instantiate(Resources.Load("Tinanago"), new Vector3(-1.5f + i * 0.3f, 0.0f, 0.0f), Quaternion.identity) as GameObject);
+            Tinanagos[i].gameObject.name = "tinanago" + i;
         }
 
     }

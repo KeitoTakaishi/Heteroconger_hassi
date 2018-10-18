@@ -1,0 +1,42 @@
+﻿#pragma kernel Emit
+#pragma kernel Iterator
+
+#define THREAD_X 128
+#define THREAD_Y 1
+#define THREAD_Z 1
+
+struct Params
+{
+    float3 emitPos;
+    float3 position;
+    float lifeTime;
+};
+
+
+RWStructuredBuffer<Params> buf;
+float3 mousePos;
+
+float2 time; //x = delta, y = time since start
+
+
+[numthreads(THREAD_X, THREAD_Y, THREAD_Z)]
+void Emit(uint id : SV_DispatchThreadID)
+{
+    Params p = buf[id];
+ 
+    if (time.y % p.lifeTime < 1.0) {
+        float rad = (id % 360) * 3.14 / 180;
+        p.position = mousePos + float3(sin(id), cos(id), 3.0);
+    }
+    buf[id] = p;
+}
+
+[numthreads(THREAD_X, THREAD_Y, THREAD_Z)]
+void Iterator(uint id : SV_DispatchThreadID)
+{
+    Params p = buf[id];
+    float rad = (id % 360) * 3.14 / 180;
+    float radius = time.y;
+    p.position += float3(radius*sin(id), radius*cos(id), 3.0);
+    buf[id] = p;
+}
