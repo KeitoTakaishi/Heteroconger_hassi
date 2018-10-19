@@ -21,6 +21,7 @@ namespace TouchScript.InputSources
     [AddComponentMenu("TouchScript/Input Sources/TUIO Input")]
     [HelpURL("http://touchscript.github.io/docs/html/T_TouchScript_InputSources_TuioInput.htm")]
     public sealed class TuioInput : InputSource
+    //public sealed class TuioInput : MonoBehaviour
     {
         #region Constants
 

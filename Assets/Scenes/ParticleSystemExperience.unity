@@ -212,7 +212,11 @@ MonoBehaviour:
   computeShader: {fileID: 7200000, guid: a8681d5743463f2418e6d7fe73ddca21, type: 3}
   lives:
   - minLife: 0.3
-    maxLife: 1
+    maxLife: 2.5
+  additionalVector: {x: 0, y: 0, z: 0}
+  emitterSize: 10
+  convergence: 4
+  viscosity: 5
 --- !u!23 &1856591316
 MeshRenderer:
   m_ObjectHideFlags: 0

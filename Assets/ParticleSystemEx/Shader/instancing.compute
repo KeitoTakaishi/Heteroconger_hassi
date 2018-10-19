@@ -91,7 +91,7 @@ void Iterator(uint id : SV_DispatchThreadID)
 
         
         float rad = (id % 360) * 3.14 / 180;
-        float radius = 0.001;
+        float radius = 0.005;
         float r = rand(float2(p.position.x, p.position.z));
         r = abs(r);
         float vel = (r ) * 0.01;
