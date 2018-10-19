@@ -4,29 +4,72 @@
 #define THREAD_X 128
 #define THREAD_Y 1
 #define THREAD_Z 1
+#define EPSILON 1e-3
 
 struct Params
 {
     float3 emitPos;
     float3 position;
-    float lifeTime;
+    float3 lifeTime;
+    float4 velocity;//w:codef
 };
 
 
 RWStructuredBuffer<Params> buf;
 float3 mousePos;
 
-float2 time; //x = delta, y = time since start
+//x:delta, y:time since start, z:dead or alive
+float2 times;
+
+
+#include "./SimplexNoise3D.cginc"
+
+float3 additionalVector;
+float  convergence;
+float  viscosity;
+
+float rand(float3 co)
+{
+    return frac(sin(dot(co.xyz, float3(12.9898, 78.233, 45.5432))) * 43758.5453);
+}
+
+float3 curlNoise(float3 coord)
+{
+    float3 dx = float3(EPSILON, 0.0, 0.0);
+    float3 dy = float3(0.0, EPSILON, 0.0);
+    float3 dz = float3(0.0, 0.0, EPSILON);
+
+    float3 dpdx0 = simplexNoise(coord - dx);
+    float3 dpdx1 = simplexNoise(coord + dx);
+    float3 dpdy0 = simplexNoise(coord - dy);
+    float3 dpdy1 = simplexNoise(coord + dy);
+    float3 dpdz0 = simplexNoise(coord - dz);
+    float3 dpdz1 = simplexNoise(coord + dz);
+
+    float x = dpdy1.z - dpdy0.z + dpdz1.y - dpdz0.y;
+    float y = dpdz1.x - dpdz0.x + dpdx1.z - dpdx0.z;
+    float z = dpdx1.y - dpdx0.y + dpdy1.x - dpdy0.x;
+
+    return float3(x, y, z) / EPSILON * 2.0;
+}
+
+float rand(float2 co)
+{
+    return frac(sin(dot(co.xy, float2(12.9898, 78.233))) * 43758.5453);
+}
+
+
+
 
 
 [numthreads(THREAD_X, THREAD_Y, THREAD_Z)]
 void Emit(uint id : SV_DispatchThreadID)
 {
     Params p = buf[id];
- 
-    if (time.y % p.lifeTime < 1.0) {
-        float rad = (id % 360) * 3.14 / 180;
-        p.position = mousePos + float3(sin(id), cos(id), 3.0);
+    if (p.lifeTime.z == -1.0) {
+        p.lifeTime.z = 1.0;
+       
+        p.position = mousePos;
     }
     buf[id] = p;
 }
@@ -35,8 +78,31 @@ void Emit(uint id : SV_DispatchThreadID)
 void Iterator(uint id : SV_DispatchThreadID)
 {
     Params p = buf[id];
-    float rad = (id % 360) * 3.14 / 180;
-    float radius = time.y;
-    p.position += float3(radius*sin(id), radius*cos(id), 3.0);
+
+
+    //生存中
+    if (p.lifeTime.z == 1.0) {
+        p.lifeTime.x += times.x;
+        //if dead
+        if (p.lifeTime.x > p.lifeTime.y) {
+            p.lifeTime.x = 0.0;
+            p.lifeTime.z = -1.0;
+        }
+
+        
+        float rad = (id % 360) * 3.14 / 180;
+        float radius = 0.001;
+        float r = rand(float2(p.position.x, p.position.z));
+        r = abs(r);
+        float vel = (r ) * 0.01;
+        p.position -= float3(radius*sin(rad), p.velocity.y + times.x/5.0, radius*cos(rad));
+        
+        
+        /*
+        float3 force = curlNoise(p.position * times.x * convergence) - p.velocity.xyz;
+        p.velocity.xyz += (force + additionalVector) * times.x * viscosity * saturate(times.y * 0.5)*0.001;
+        p.position += p.velocity.xyz * times.x;
+        */
+    }
     buf[id] = p;
 }

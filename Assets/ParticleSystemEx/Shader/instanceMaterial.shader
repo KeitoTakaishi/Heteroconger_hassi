@@ -14,7 +14,8 @@
         {
             float3 emitPos;
             float3 position;
-            float lifeTime;
+            float3 lifeTime;
+            float4 velocity;
         };
 
         StructuredBuffer<Params> buf;
