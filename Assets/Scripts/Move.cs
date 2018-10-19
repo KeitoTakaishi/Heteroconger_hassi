@@ -89,6 +89,7 @@ public class Move : MonoBehaviour {
     {
         var ccdik = joint.GetComponent<CCDIK>().solver;
         ccdik.target = target.transform;
+        //ccdik.IKPositionWeight
     } 
 
     //それぞれの個体がtargetを持っている場合のtargetのセットアップ
@@ -170,7 +171,9 @@ public class Move : MonoBehaviour {
         isCoRoutine = true;
         var t = 0.0f;
         var fromPos = target.transform.position;
-        var toPos = target.transform.position + Vector3.one * Random.RandomRange(-1.5f, 1.5f);
+        Vector3 r = Random.insideUnitSphere;
+
+        var toPos = target.transform.position + new Vector3(r.x * 2.0f, r.y, r.z * 2.0f);
         for(int i = 0; i < 100; i++)
         {
             target.transform.position = Vector3.Lerp(fromPos, toPos, t);
